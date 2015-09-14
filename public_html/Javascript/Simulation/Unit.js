@@ -1,7 +1,7 @@
 /* Unit object shared by all objects on map, including bodies and inanimate 
  * objects.
  */
-var state = { stopped:0, idle:1, wander:2, going:3};
+var state = { stopped:0, idle:1, wander:2, going:3, hungry:4};
 // UNIT OBJECT CLASS
 function Unit(x, y, type, faction) {
     this.isAlive = true;
@@ -99,10 +99,19 @@ Unit.prototype.movement = function() {
                 this.setRandomCourse();
                 this.action = state.wander;
             }
+			if (this.eaten<this.type.store/2) {
+				this.action = state.hungry;
+			}
             break;
             
         case state.stopped:
             break;
+			
+		case state.hungry:
+			if (this.eaten>this.type.store*0.8) {
+				this.action = state.idle;
+			}
+			break;
             
     }
 };
@@ -127,10 +136,10 @@ Unit.prototype.setRandomCourse = function() {
         this.targY = this.y + random(this.type.speed*8)-this.type.speed*4;
 
     
-    if (this.targX<0) this.targX=0;
-    if (this.targX>window.innerWidth) this.targX=window.innerWidth;
-    if (this.targY<0) this.targY=0;
-    if (this.targY>window.innerHeight) this.targY=window.innerHeight;
+//    if (this.targX<0) this.targX=0;
+//    if (this.targX>window.innerWidth) this.targX=window.innerWidth;
+//    if (this.targY<0) this.targY=0;
+//    if (this.targY>window.innerHeight) this.targY=window.innerHeight;
     
     this.setCourse();
 };

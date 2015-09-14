@@ -97,65 +97,12 @@ Simulation.prototype.restart = function() {
 };
 // METHODS
 Simulation.prototype.update = function() {
-    
     if (this.running) {
         
         if (this.gameState==="Victory") {
             this.winAnimation+=0.2;
         }
-        
-        for(var i=0; i<this.unitNum; i++) {
-            var unit = this.unit[i];
-                if (unit.isAlive) {
-                    if (unit.action === state.wander) {
-                        if (this.map.isGround(unit.targX,unit.targY)===false) {
-                            unit.action = state.idle;
-                        }
-                    }
-                    unit.update();
-                    if (unit.cooldown===0) {
-                        var closestFoe = this.findClosestFoe(i);
-                        if (closestFoe === -1) {
-                            if (unit.eaten < unit.type.store && (unit.type.species==="Bug" || unit.type.name==="Replicator")) {
-                              // no foes in range, safe to eat;
-                                var closestFood = this.findClosestFood(i);
-                                if (closestFood !== -1) {
-                                    this.eatFood(unit);
-                                    this.unit[closestFood].food--;    
-                                } else {
-                                    closestFood = this.findClosestFlora(unit);
-                                    if (closestFood !== -1) {
-                                        this.eatFood(unit);    
-                                    }
-                                } 
-                            }
-                        } else {
-                            //attack!
-                            var damage = unit.type.attack - this.unit[closestFoe].type.armour;
-                            if (damage<1) damage = 1;
-                            this.unit[closestFoe].health -= damage; 
-                            unit.cooldown = unit.type.cooldown;
-                            this.addEvent(unit,this.unit[closestFoe]);
-                            if (unit.type.species==="Bug") {
-                                this.targetAudio.playSound(14);
-                            } else {
-                                this.targetAudio.playSound(16);
-                            }
-                        }
-                    }
-                }
-        }
-        // check for death
-        for(var i=0; i<this.unitNum; i++) {
-            if (this.unit[i].isAlive && this.unit[i].health<1) {
-                this.unit[i].die();
-                if (this.unit[i].type.species==="Bug") {
-                    this.targetAudio.playSound(13);
-                } else {
-                    this.targetAudio.playSound(15);
-                }
-            };
-        }
+        this.updateUnits();
     }
     this.updateTotals();
     this.updateEvents();
@@ -227,6 +174,62 @@ Simulation.prototype.selectAll = function() {
        }   
    }
    if (this.selectedNum>0) this.targetAudio.playSound(8);
+};
+
+Simulation.prototype.updateUnits = function() {
+
+	for(var i=0; i<this.unitNum; i++) {
+		var unit = this.unit[i];
+		if (unit.isAlive) {
+			if (unit.action === state.wander) {
+				if (this.map.isGround(unit.targX,unit.targY)===false) {
+					unit.action = state.idle;
+				}
+			}
+			unit.update();
+			if (unit.cooldown===0) {
+				var closestFoe = this.findClosestFoe(i);
+				if (closestFoe === -1) {
+					if (unit.eaten < unit.type.store && (unit.type.species==="Bug" || unit.type.name==="Replicator")) {
+					  // no foes in range, safe to eat;
+						var closestFood = this.findClosestFood(i);
+						if (closestFood !== -1) {
+							this.eatFood(unit);
+							this.unit[closestFood].food--;    
+						} else {
+							closestFood = this.findClosestFlora(unit);
+							if (closestFood !== -1) {
+								this.eatFood(unit);    
+							}
+						} 
+					}
+				} else {
+					//attack!
+					var damage = unit.type.attack - this.unit[closestFoe].type.armour;
+					if (damage<1) damage = 1;
+					this.unit[closestFoe].health -= damage; 
+					unit.cooldown = unit.type.cooldown;
+					this.addEvent(unit,this.unit[closestFoe]);
+					if (unit.type.species==="Bug") {
+						this.targetAudio.playSound(14);
+					} else {
+						this.targetAudio.playSound(16);
+					}
+				}
+			}
+		}
+	}
+	// check for death
+	for(var i=0; i<this.unitNum; i++) {
+		if (this.unit[i].isAlive && this.unit[i].health<1) {
+			this.unit[i].die();
+			if (this.unit[i].type.species==="Bug") {
+				this.targetAudio.playSound(13);
+			} else {
+				this.targetAudio.playSound(15);
+			}
+		};
+	}
 };
 
 Simulation.prototype.setTarget = function(targetX, targetY) {
